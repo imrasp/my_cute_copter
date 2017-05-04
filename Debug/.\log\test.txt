@@ -1,0 +1,9 @@
+
+----------------------------------------------------------------
+1 Latitude (WGS84), in degrees, Longitude (WGS84, in degrees,  Altitude (AMSL), in meters * 1000 
+2 : this position in the local coordinate frame 
+----------------------------------------------------------------
+1 CURRENT HOME POSITION - after set home (lat,lon,alt) = [ 0.000000 , 0.000000, 0.000000 ] 
+2 CURRENT HOME POSITION - after set home (x,y,z) = [ 0.000000 , 0.000000, 0.000000 ] 
+
+----------------------------------------------------------------
