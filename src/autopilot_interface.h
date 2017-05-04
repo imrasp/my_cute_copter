@@ -18,11 +18,16 @@
 #include <sys/time.h>
 #include <opencv2/opencv.hpp>
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <time.h>
+#include <string>
 
 #include <common/mavlink.h>
 #include "coordinate_converter.h"
 
-
+using std::ofstream;
+using namespace std;
 
 // ------------------------------------------------------------------------------
 //   Defines
@@ -246,7 +251,7 @@ class Autopilot_Interface
 public:
 
 	Autopilot_Interface();
-	Autopilot_Interface(Serial_Port *serial_port_,  char filename[80]);
+	Autopilot_Interface(Serial_Port *serial_port_);
 	~Autopilot_Interface();
 
 	char reading_status;
@@ -265,6 +270,8 @@ public:
 	// 1  : Updated
 	//enum
 
+	ofstream myfile;
+	string pos;
 
 	char init_coord_conversion;
 

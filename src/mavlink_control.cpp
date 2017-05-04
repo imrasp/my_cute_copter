@@ -18,6 +18,7 @@ top (int argc, char **argv)
 	char *uart_name = (char*)"/dev/tty.usbmodem1";
 #else
 	char *uart_name = (char*)"/dev/ttyUSB0";
+	//char *uart_name = (char*)"/dev/ttySAC0";
 #endif
 	int baudrate = 57600;
 
@@ -32,7 +33,7 @@ top (int argc, char **argv)
 	struct tm * now = localtime( & t );
 
 	char filename[80];
-	strftime(filename,80,"./log/LOG_%Y-%m-%d_%H:%M:%S.txt",now);
+	strftime(filename,80,"./log/%Y-%m-%d_%H:%M:%S_LOGFILE.txt",now);
 	plog = fopen(filename, "w");
 	if(plog==NULL)
 	{
@@ -74,7 +75,7 @@ top (int argc, char **argv)
 	 * otherwise the vehicle will go into failsafe.
 	 *
 	 */
-	Autopilot_Interface autopilot_interface(&serial_port, filename);
+	Autopilot_Interface autopilot_interface(&serial_port);
 
 	/*
 	 * Setup interrupt signal handler

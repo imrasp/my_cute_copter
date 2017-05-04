@@ -57,7 +57,7 @@ set_position(float lat, float lon, float alt, mavlink_set_position_target_global
 	sp.lon_int = lon;
 	sp.alt = alt;
 
-	printf("POSITION SETPOINT LLA = [ %.4f , %.4f , %.4f ] \n", sp.lat_int, sp.lon_int, sp.alt);
+	printf("POSITION SETPOINT LLA = [ %.4f , %.4f , %.4f ] \n", (float)sp.lat_int, (float)sp.lon_int, (float)sp.alt);
 
 }
 
@@ -183,12 +183,15 @@ set_yaw_rate(float yaw_rate, mavlink_set_position_target_global_int_t &sp)
 //   Con/De structors
 // ------------------------------------------------------------------------------
 Autopilot_Interface::
-Autopilot_Interface(Serial_Port *serial_port_, char filename[80])
+Autopilot_Interface(Serial_Port *serial_port_)
 {
-	//printf("Filename : %s \n", filename);
-	//freopen (filename,"r+",plog);
-	//freopen (filename,"r+",stdout);
-	//printf("reopen log file...\n");
+	time_t t = time(0);   // get time now
+	struct tm * now = localtime( & t );
+	char filename[80];
+	strftime(filename,80,"./log/%Y-%m-%d_%H:%M:%S.csv",now);
+
+	myfile.open (filename);
+
 
 	// initialize attributes
 	write_count = 0;
@@ -324,12 +327,14 @@ read_messages()
 
 			case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
 			{
-				printf("MAVLINK_MSG_ID_LOCAL_POSITION_NED \n");
+				//printf("MAVLINK_MSG_ID_LOCAL_POSITION_NED \n");
 				mavlink_msg_local_position_ned_decode(&message, &(current_messages.local_position_ned));
 				current_messages.time_stamps.local_position_ned = get_time_usec();
 				this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
 
-				printf("LOCAL_POSITION_NED : %f %f %f \n", current_messages.local_position_ned.x,current_messages.local_position_ned.y,current_messages.local_position_ned.z);
+				//printf("LOCAL_POSITION_NED : %f %f %f \n", current_messages.local_position_ned.x,current_messages.local_position_ned.y,current_messages.local_position_ned.z);
+				pos = std::string("ned") + "," + to_string(current_messages.local_position_ned.x) + "," + to_string(current_messages.local_position_ned.y) + "," + to_string(current_messages.local_position_ned.z) + "," + "\n";
+				myfile << pos;
 
 				if (imu_status == UNINITIAL_IMU)
 				{
@@ -342,12 +347,15 @@ read_messages()
 
 			case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
 			{
-				printf("\n MAVLINK_MSG_ID_GLOBAL_POSITION_INT \n");
+				//printf("\n MAVLINK_MSG_ID_GLOBAL_POSITION_INT \n");
 				mavlink_msg_global_position_int_decode(&message, &(current_messages.global_position_int));
 				current_messages.time_stamps.global_position_int = get_time_usec();
 				this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
 
-				printf("GLOBAL_POSITION_INT : %f %f %f \n", (float)current_messages.global_position_int.lat, (float)current_messages.global_position_int.lon, (float)current_messages.global_position_int.alt);
+				//printf("GLOBAL_POSITION_INT : %f %f %f \n", (float)current_messages.global_position_int.lat, (float)current_messages.global_position_int.lon, (float)current_messages.global_position_int.alt);
+				pos = std::string("int") + "," + to_string(current_messages.global_position_int.lat) + "," + to_string(current_messages.global_position_int.lon) + "," + to_string(current_messages.global_position_int.alt) + "," + "\n";
+				myfile << pos;
+
 				float gps[3] = {(float)current_messages.global_position_int.lat,(float)current_messages.global_position_int.lon,(float)current_messages.global_position_int.alt};
 
 				// set initial params for coordinate conversion
@@ -364,6 +372,8 @@ read_messages()
 					//Mat result = ConvertCoordinate.gpstoimu(gps);
 					Mat result = ConvertCoordinate.LLAtoXYZ(gps);
 					printf("conversion : result : %f, %f, %f \n", result.at<float>(0), result.at<float>(1), result.at<float>(2));
+					pos = std::string("conversion_result") + "," + to_string(result.at<float>(0)) + "," + to_string(result.at<float>(1)) + "," + to_string(result.at<float>(2)) + "," + "\n";
+									myfile << pos;
 				}
 
 				break;
@@ -423,7 +433,7 @@ read_messages()
 				this_timestamps.gps_input = current_messages.time_stamps.gps_input;
 
 
-				printf("\n GPS_INPUT :: number of satellite : %u, HDOP : %.1f \n ", current_messages.gps_input.satellites_visible, current_messages.gps_input.hdop);
+				//printf("\n GPS_INPUT :: number of satellite : %u, HDOP : %.1f \n ", current_messages.gps_input.satellites_visible, current_messages.gps_input.hdop);
 
 				break;
 			}
@@ -445,7 +455,9 @@ read_messages()
 				current_messages.time_stamps.gps_raw_int = get_time_usec();
 				this_timestamps.gps_raw_int = current_messages.time_stamps.gps_raw_int;
 
-				printf("\n GPS_INPUT_RAW_INT :: number of satellite : %u, HDOP : %u \n ", current_messages.gps_raw_int.satellites_visible, current_messages.gps_raw_int.eph);
+				//printf("\n GPS_INPUT_RAW_INT :: number of satellite : %u, HDOP : %u \n ", current_messages.gps_raw_int.satellites_visible, current_messages.gps_raw_int.eph);
+				pos = std::string("GPS_input") + "," + to_string(current_messages.gps_raw_int.satellites_visible) + "," + to_string(current_messages.gps_raw_int.eph) + "," + "\n";
+				myfile << pos;
 
 				break;
 			}
